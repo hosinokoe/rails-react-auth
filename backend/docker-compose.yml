@@ -13,7 +13,9 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile
+      # dockerfile: Dockerfile
+      dockerfile: Dockerfile.simple
+      # dockerfile: Dockerfile.alpine
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
     volumes:
       - .:/myapp

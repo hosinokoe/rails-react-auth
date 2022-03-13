@@ -1,0 +1,34 @@
+FROM ruby:3.0-alpine AS base
+
+# mariadb-dev for mysql, bash for entrypoint.sh, tzdata for timezone
+RUN apk add --update npm mariadb-dev bash tzdata
+
+FROM base AS dependencies
+RUN apk add --update build-base
+
+ENV APP_PATH /myapp
+
+RUN mkdir $APP_PATH
+WORKDIR $APP_PATH
+
+COPY Gemfile $APP_PATH/Gemfile
+COPY Gemfile.lock $APP_PATH/Gemfile.lock
+RUN bundle install
+
+FROM base
+
+COPY entrypoint.sh /usr/bin/
+RUN chmod +x /usr/bin/entrypoint.sh
+
+RUN adduser -D app
+USER app
+WORKDIR /home/app
+
+COPY --from=dependencies /usr/local/bundle/ /usr/local/bundle/
+
+COPY --chown=app . ./
+
+ENTRYPOINT ["entrypoint.sh"]
+EXPOSE 3000
+
+CMD ["rails", "server", "-b", "0.0.0.0"]
